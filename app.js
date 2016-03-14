@@ -88,7 +88,7 @@
         //tekitan loendi htmli
         this.cars.forEach(function(car){
 
-            var new_car = new Car(car.title, car.color, car.seats, car.timeAdded);
+            var new_car = new Car( car.title, car.color, car.seats, car.timeAdded);
             var li = new_car.createHtmlElement();
             document.querySelector('.list-of-cars').appendChild(li);
         });
@@ -102,9 +102,26 @@
 
     bindMouseEvents: function(){
       document.querySelector('.add-new-car').addEventListener('click', this.addNewClick.bind(this));
-      document.querySelector('.delete-all').addEventListener('click', deleteStorage());
 
 
+    },
+    delete: function(event){
+
+      var conf = confirm('Oled kindel?');
+      if(!conf){return;}
+      var ul = event.target.parentNode.parentNode;
+      var li = event.target.parentNode;
+      ul.removeChild(li);
+
+      for(var i=0; i<this.car.length; i++){
+        if(this.car[i].id == event.target.dataset.id){
+          //kustuta kohal i objekt ära
+          this.books.splice(i, 1);
+          //ei lähe edasi
+          break;
+        }
+      }
+      localStorage.setItem('cars', JSON.stringify(this.cars));
     },
     addNewClick: function(event){
       // lisa uus purk
@@ -132,7 +149,7 @@
           document.querySelector('.feedback-error').className=document.querySelector('.feedback-error').className.replace('feedback-error','feedback-success');
         }
         document.querySelector('#show-feedback').innerHTML='Salvestamine õnnestus';
-        var new_car = new Car(title, color, seats, timeAdded);
+        var new_car = new Car(guid(),title, color, seats, timeAdded);
         //lisan massiivi moosipurgi
         this.cars.push(new_car);
         console.log(JSON.stringify(this.cars));
@@ -200,9 +217,6 @@
   },
 
   };
- var deleteStorage = function(){
-   window.localStorage.clear();
- };
 
   var Car = function(new_title, new_color, new_seats, timeAdded){
     this.title = new_title;
@@ -242,9 +256,27 @@
 
       console.log(li);
 
+      var delete_span = document.createElement('button');
+      delete_span.setAttribute('data-id', this.id);
+      delete_span.innerHTML = "Kustuta";
+      li.appendChild(delete_span);
+      delete_span.addEventListener('click', AutoAed.instance.delete.bind(AutoAed.instance));
       return li;
     }
   };
+  //helper
+  function guid(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now(); //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
 
 
   window.onload = function(){
