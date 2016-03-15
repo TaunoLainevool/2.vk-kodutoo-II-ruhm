@@ -1,80 +1,61 @@
 (function(){
   "use strict";
 
-
   var AutoAed = function(){
-
     // SINGLETON PATTERN (4 rida)
     if(AutoAed.instance){
       return AutoAed.instance;
     }
-      AutoAed.instance = this; // this viitab moosipurgile
+    AutoAed.instance = this; //this viitab carspurgile
 
     this.routes = AutoAed.routes;
+
+    //console.log(this);
+    //console.log('moosipurgi sees');
 
     //Kõik muutujad, mis on üldised ja muudetavad
     this.currentRoute = null; // hoiab meeles mis lehel hetkel on
     this.interval = null;
-    this.cars = []; //kõik autod tulevad siia sisse
-
-    console.log(this);
-    //console.log('moosipurgi sees');
-
-    // KÕIK MUUTUJAD, mis on üldised ja muudetavad
-    this.currentRoute = null; // hoian meeles mis lehel olen (home-view, ...)
-    this.interval = null;
-
-
+    this.cars = []; //kõik purgid tulevad siia sisse
 
     //panen rakenduse tööle
     this.init();
   };
 
-  // kirjeldatud kõik lehed
+  //kirjeldatud kõik lehed
   AutoAed.routes = {
-    "home-view": {
+    "home-view" : {
       render: function(){
         // käivitan siis kui jõuan lehele
         console.log('JS avalehel');
-
-        // kui olemas, teen nulliks
-        if(this.interval){ clearInterval(this.interval); }
-
-        // kui jõuan avalehele siis käivitub timer, mis hakkab trükkima kulunud sekundeid
-        // divi sisse #counter
-        // hakkab 0st
+        if(this.interval){clearInterval(this.interval);}
         var seconds = 0;
         this.interval = window.setInterval(function(){
           seconds++;
           document.querySelector('#counter').innerHTML = seconds;
-        }, 1000); //iga 1000ms tagant käivitub
-
+        }, 1000);
       }
     },
-    "list-view": {
+    "list-view" : {
       render: function(){
-        console.log('JS loendi lehel');
-
+        console.log('JS loend lehel');
       }
     },
-    "manage-view": {
+    "manage-view" : {
       render: function(){
-        console.log('JS halduse lehel');
-
+        //console.log('JS haldus lehel');
       }
     }
   };
 
-  //kõik moosipurgi funktsioonid tulevad siia sisse
+  //kõik moosipurgi funktsioonid siia sisse
   AutoAed.prototype = {
     init: function(){
-      console.log('rakendus käivitus');
-      // Siia tuleb esialgne loogika
-
+      //console.log('rakendus käivitus');
+      //Esialgne loogika tuleb siia
       window.addEventListener('hashchange', this.routeChange.bind(this));
-
-      //vaatan mis lehel olen, kui ei ole hashi lisan avalehe
-      console.log(window.location.hash);
+      //vaatan mis lehel olen
+      //console.log(window.location.hash);
       if(!window.location.hash){
         window.location.hash = "home-view";
       }else{
@@ -87,180 +68,170 @@
         this.cars = JSON.parse(localStorage.cars);
         //tekitan loendi htmli
         this.cars.forEach(function(car){
-
-            var new_car = new Car( car.title, car.color, car.seats, car.timeAdded);
+            var new_car = new Car(car.id,car.title, car.color,car.seats, car.timeAdded);
             var li = new_car.createHtmlElement();
             document.querySelector('.list-of-cars').appendChild(li);
         });
       }
 
-
-
-      // hakka kuulama hiireklõpse
-      this.bindMouseEvents();
+      //hakka kuulama hiireklõpse
+      this.bindEvents();
     },
-
-    bindMouseEvents: function(){
+    bindEvents: function(){
       document.querySelector('.add-new-car').addEventListener('click', this.addNewClick.bind(this));
+      //kuulan trükkimist otsi kastist
+      document.querySelector('#search').addEventListener('keyup', this.search.bind(this));
+    },
+    search: function(event){
+      //otsikasti väärtus
+      var needle = document.querySelector('#search').value.toLowerCase();
+      //console.log(needle);
 
-
+      var list = document.querySelectorAll('ul.list-of-cars li');
+      console.log(list);
+      for(var i=0; i<list.length; i++){
+        var li = list[i];
+          //ühe list itemi sisu
+          var stack = li.querySelector('.content').innerHTML.toLowerCase();
+          //kas otsisõna on olemas
+          if(stack.indexOf(needle) !== -1){
+            //olemas
+            li.style.display = 'list-item';
+          }else{
+            //ei ole olemas
+            li.style.display = 'none';
+          }
+      }
     },
     delete: function(event){
 
-      var conf = confirm('Oled kindel?');
+      var conf = confirm('Olete kindel?');
       if(!conf){return;}
       var ul = event.target.parentNode.parentNode;
       var li = event.target.parentNode;
       ul.removeChild(li);
 
-      for(var i=0; i<this.car.length; i++){
-        if(this.car[i].id == event.target.dataset.id){
-          //kustuta kohal i objekt ära
-          this.books.splice(i, 1);
-          //ei lähe edasi
+      for(var i=0; i<this.cars.length; i++){
+        if(this.cars[i].id == event.target.dataset.id){
+          //kustuta kohal i objekt Ć¤ra
+          this.cars.splice(i, 1);
+          //ei lĆ¤he edasi
           break;
         }
       }
       localStorage.setItem('cars', JSON.stringify(this.cars));
     },
     addNewClick: function(event){
-      // lisa uus purk
-      var title =this.trimWord(document.querySelector('.title').value);
+      //lisa uus purk
+      var title = this.trimWord(document.querySelector('.title').value);
       var color = this.trimWord(document.querySelector('.color').value);
       var seats = this.trimWord(document.querySelector('.seats').value);
-      var timeAdded = this.writeDate();
-      //console.log(title + ' ' + color +''+ seats+''timeAdded);
-      //FeedBack
-
-
-
-
-      var className = document.getElementById("show-feedback").className;
+	    var timeAdded = this.writeDate();
+      //console.log(title+' '+ingredients+' Lisatud: '+timeAdded);
+	    var className = document.getElementById("show-feedback").className;
       //lisan masiivi purgid
 
 
-      if(title === '' || color === '' || seats===''){
-          if(className == "feedback-success"){
-              document.querySelector('.feedback-success').className=document.querySelector('.feedback-success').className.replace('feedback-success','feedback-error');
-          }
+      if(title === '' || color === ''|| seats === ''){
+  		    if(className == "feedback-success"){
+  		        document.querySelector('.feedback-success').className=document.querySelector('.feedback-success').className.replace('feedback-success','feedback-error');
+  		    }
           document.querySelector('#show-feedback').innerHTML='Kõik read peavad täidetud olema';
       }else{
         if(className == "feedback-error"){
           document.querySelector('.feedback-error').className=document.querySelector('.feedback-error').className.replace('feedback-error','feedback-success');
         }
         document.querySelector('#show-feedback').innerHTML='Salvestamine õnnestus';
-        var new_car = new Car(guid(),title, color, seats, timeAdded);
-        //lisan massiivi moosipurgi
+  		  var new_car = new Car(guid(), title, color,seats, timeAdded);
+
         this.cars.push(new_car);
         console.log(JSON.stringify(this.cars));
         //JSON'i stringina salvestan local storagisse
         localStorage.setItem('cars', JSON.stringify(this.cars));
         document.querySelector('.list-of-cars').appendChild(new_car.createHtmlElement());
       }
-      },
-
+    },
     routeChange: function(event){
-
-      // slice võtab võtab # ära #home-view >> home-view
       this.currentRoute = window.location.hash.slice(1);
-
-      // kas leht on olemas
+      //kas leht on olemas
       if(this.routes[this.currentRoute]){
-        //jah
-
+        //jah olemas
         this.updateMenu();
-
-        console.log('>>> ' + this.currentRoute);
+        //console.log('>>> '+this.currentRoute);
         //käivitan selle lehe jaoks ettenähtud js
         this.routes[this.currentRoute].render();
       }else{
-        // 404?
+        //404? ei ole
         console.log('404');
         window.location.hash = 'home-view';
       }
-
     },
-
     updateMenu: function(){
-
-      //kui on mingil menüül klass active-menu siis võtame ära
-      document.querySelector('.active-menu').className = document.querySelector('.active-menu').className.replace(' active-menu', '');
-
+      //kui menüül on active-menu siis võtame ära
+      document.querySelector('.active-menu').className=document.querySelector('.active-menu').className.replace(' active-menu', '');
       //käesolevale lehele lisan juurde
-      document.querySelector('.' + this.currentRoute).className += ' active-menu';
-
+      document.querySelector('.'+this.currentRoute).className+=' active-menu';
     },
-    writeDate : function(){
-        var d = new Date();
-        var day = d.getDate();
-        var month = d.getMonth();
-        var year = d.getFullYear();
-        //#clock element htmli
-        var curTime = this.addZeroBefore(day)+"."+this.addZeroBefore(month+1)+"."+year;
-        return curTime;
-    },
-    addZeroBefore : function(number){
-        if(number<10){
-        number="0"+number;
+	writeDate : function(){
+		  var d = new Date();
+		  var day = d.getDate();
+		  var month = d.getMonth();
+		  var year = d.getFullYear();
+		  //#clock element htmli
+		  var curTime = this.addZeroBefore(day)+"."+this.addZeroBefore(month+1)+"."+year;
+		  return curTime;
+	},
+	addZeroBefore : function(number){
+		  if(number<10){
+			number="0"+number;
+		  }
+		  return number;
+	},
+    trimWord: function (str) {
+    str = str.replace(/^\s+/, '');
+    for (var i = str.length - 1; i >= 0; i--) {
+        if (/\S/.test(str.charAt(i))) {
+            str = str.substring(0, i + 1);
+            break;
         }
-        return number;
-    },
-      trimWord: function (str) {
-      str = str.replace(/^\s+/, '');
-      for (var i = str.length - 1; i >= 0; i--) {
-          if (/\S/.test(str.charAt(i))) {
-              str = str.substring(0, i + 1);
-              break;
-          }
-      }
-      return str;
-  },
-
+    }
+    return str;
+}
   };
 
-  var Car = function(new_title, new_color, new_seats, timeAdded){
-    this.title = new_title;
+  var Car = function(new_id,title, new_color, new_seats, timeAdded){
+    this.id = new_id;
+    this.title = title;
     this.color = new_color;
     this.seats = new_seats;
-    this.timeAdded = timeAdded;
+	  this.timeAdded = timeAdded;
   };
-
-
   Car.prototype = {
     createHtmlElement: function(){
-      // anda tagasi ilus html
-
-      // li
-      //   span.letter
-      //     M
-      //   span.content
-      //     Maasikamoos | maasikas, õun
-
+      //anna tagasi ilus html
       var li = document.createElement('li');
 
       var span = document.createElement('span');
       span.className = 'letter';
-
       var letter = document.createTextNode(this.title.charAt(0));
       span.appendChild(letter);
-
       li.appendChild(span);
 
       var content_span = document.createElement('span');
       content_span.className = 'content';
-
-      var content = document.createTextNode(this.title + ' | ' + this.color + ' | ' + this.seats + '  Lisatud  '+this.timeAdded);
+      var content = document.createTextNode(this.title+' | '+this.color+' | '+this.seats+' Lisatud: '+this.timeAdded+' ');
       content_span.appendChild(content);
-
       li.appendChild(content_span);
 
-      console.log(li);
-
-      var delete_span = document.createElement('button');
+      var delete_span = document.createElement('span');
+      delete_span.style.color = "red";
+ 	    delete_span.style.cursor = "pointer";
       delete_span.setAttribute('data-id', this.id);
       delete_span.innerHTML = "Kustuta";
       li.appendChild(delete_span);
       delete_span.addEventListener('click', AutoAed.instance.delete.bind(AutoAed.instance));
+
+      //console.log(li);
       return li;
     }
   };
@@ -277,8 +248,6 @@
     });
     return uuid;
   }
-
-
   window.onload = function(){
     var app = new AutoAed();
   };
