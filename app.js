@@ -103,6 +103,34 @@
           }
       }
     },
+    edit: function(event){
+      var selected_id = event.target.dataset.id;
+      var clicked_li = event.target.parentNode;
+      $("#ModalEdit").modal({backdrop: true});
+
+       $(document).on("click", "#edit_close", function(event){
+        return;
+      });
+
+       $(document).on("click", "#save", function(event){
+       console.log(clicked_li);
+       var title = document.querySelector('.EditTitle').value;
+       var color = document.querySelector('.EditColor').value;
+       var seats = document.querySelector('.EditSeats').value;
+       this.cars = JSON.parse(localStorage.cars);
+       clicked_li.parentNode.removeChild(clicked_li);
+       for(var i=0; i<this.cars.length; i++){
+         if(this.cars[i].id == selected_id){
+           this.cars[i].title = title;
+           this.cars[i].color = color;
+           this.cars[i].seats = seats;
+           break;
+         }
+       }
+       localStorage.setItem('cars', JSON.stringify(this.cars));
+       location.reload();
+      });
+    },
     delete: function(event){
 
       var conf = confirm('Olete kindel?');
@@ -227,9 +255,18 @@
       delete_span.style.color = "red";
  	    delete_span.style.cursor = "pointer";
       delete_span.setAttribute('data-id', this.id);
-      delete_span.innerHTML = "Kustuta";
+      delete_span.innerHTML = "Kustuta"+'  ';
       li.appendChild(delete_span);
       delete_span.addEventListener('click', AutoAed.instance.delete.bind(AutoAed.instance));
+
+
+     var edit_span = document.createElement('button');
+     edit_span.setAttribute('data-id', this.id);
+     edit_span.innerHTML = "Muuda";
+     li.appendChild(edit_span);
+     edit_span.addEventListener('click', AutoAed.instance.edit.bind(AutoAed.instance));
+
+
 
       //console.log(li);
       return li;
